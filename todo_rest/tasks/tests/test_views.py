@@ -45,8 +45,15 @@ class AuthTests(APITestCase):
         '''
         Test that a user cannot register with an invalid password.
         '''
-        response = self.create_user('short@user.com', 'short')
+        response = self.create_user('short@user.com', 'short1!')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.create_user('nonumber@user.com', 'Password!')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.create_user('nospecial@user.com', 'Password11')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
 
     def create_user(self, email, password):
         '''
