@@ -129,12 +129,14 @@ class AuthTests(APITestCase):
 
         url = reverse('login')
 
-        # Try incorect email
+        # Try incorrect email
         user_data = {'email': 'void@user.com', 'password': 'Password1!'}
         response = self.client.post(url, user_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # Try incorect password
+        # Try incorrect password
         user_data = {'email': 'test@user.com', 'password': 'wrongpassword'}
         response = self.client.post(url, user_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    
