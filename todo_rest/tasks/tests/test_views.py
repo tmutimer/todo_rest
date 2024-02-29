@@ -170,3 +170,14 @@ class TaskTests(APITestCase):
                      , "due_date": "2024-03-01" }
         response = self.client.post(url, task_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_task_too_long_name(self):
+        '''
+        Test that a task cannot be created with a name that is too long
+        '''
+        url = reverse('tasks')
+        task_data = {"name": "Take the bins out" * 100
+                     , "description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        response = self.client.post(url, task_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
