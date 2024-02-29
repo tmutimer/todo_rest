@@ -119,3 +119,16 @@ class AuthTests(APITestCase):
         Test that a user cannot log in with invalid credentials.
         '''
         # First, create a user
+        self.register_default_test_user()
+
+        url = reverse('login')
+
+        # Try incorect email
+        user_data = {'email': 'void@user.com', 'password': 'Password1!'}
+        response = self.client.post(url, user_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Try incorect password
+        user_data = {'email': 'test@user.com', 'password': 'wrongpassword'}
+        response = self.client.post(url, user_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
