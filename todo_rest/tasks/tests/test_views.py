@@ -33,3 +33,12 @@ class AuthTests(APITestCase):
         data = {'password': 'Password1!'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_registration_no_password(self):
+        '''
+        Test that a user cannot register without a password.
+        '''
+        url = reverse('register')
+        data = {'email': 'test@user.com'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
