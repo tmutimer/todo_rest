@@ -181,3 +181,22 @@ class TaskTests(APITestCase):
                      , "due_date": "2024-03-01" }
         response = self.client.post(url, task_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_one_task(self):
+        '''
+        Test that a user can get their tasks
+        '''
+        # Create a task
+        url = reverse('tasks')
+        task_data = {"name": "Take the bins out"
+                     , "description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        self.client.post(url, task_data, format='json')
+
+        # Get the task
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], task_data['name'])
+        self.assertEqual(response.data[0]['description'], task_data['description'])
+        self.assertEqual(response.data[0]['due_date'], task_data['due_date'])
