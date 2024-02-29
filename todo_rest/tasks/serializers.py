@@ -1,6 +1,7 @@
 import re
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from .models import Task
 
 User = get_user_model()
 
@@ -39,3 +40,13 @@ class UserLoginSerializer(serializers.Serializer):
             data['user'] = user
             return data
         raise serializers.ValidationError("Incorrect Credentials")
+
+class TaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = '__all__'
+        read_only_fields = ('user',)
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)

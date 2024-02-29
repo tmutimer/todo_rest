@@ -140,3 +140,23 @@ class AuthTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     
+class TaskTests(APITestCase):
+    def setUp(self):
+        '''
+        Create a user and return their token.
+        '''
+        user_response = TestUtils.register_default_test_user(self.client)
+        self.token = user_response.data['token']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}') 
+
+    def test_create_task(self):
+        '''
+        Test that a user can create a task
+        '''
+        url = reverse('tasks')
+        task_data = {"name": "Take the bins out"
+                     , "description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        response = self.client.post(url, task_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue('id' in response.data)
