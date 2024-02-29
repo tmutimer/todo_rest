@@ -29,9 +29,7 @@ class AuthTests(APITestCase):
         '''
         Test that a user cannot register without an email.
         '''
-        url = reverse('register')
-        data = {'password': 'Password1!'}
-        response = self.client.post(url, data, format='json')
+        response = self.create_user('test@user.com', 'Password1!')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_user_registration_no_password(self):
@@ -42,3 +40,19 @@ class AuthTests(APITestCase):
         data = {'email': 'test@user.com'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_registration_weak_password(self):
+        '''
+        Test that a user cannot register with an invalid password.
+        '''
+        response = self.create_user('short@user.com', 'short')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def create_user(self, email, password):
+        '''
+        Create a user for testing.
+        '''
+        url = reverse('register')
+        data = {'email': email, 'password': password}
+        response = self.client.post(url, data, format='json')
+        return response
