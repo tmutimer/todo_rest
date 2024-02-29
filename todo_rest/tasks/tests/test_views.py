@@ -160,3 +160,13 @@ class TaskTests(APITestCase):
         response = self.client.post(url, task_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue('id' in response.data)
+
+    def test_create_task_no_name(self):
+        '''
+        Test that a task cannot be created without a name
+        '''
+        url = reverse('tasks')
+        task_data = {"description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        response = self.client.post(url, task_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
