@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 
 class AuthTests(APITestCase):
 
-    def create_user(self, email, password):
+    def register_user(self, email, password):
         '''
         Create a user for testing.
         '''
@@ -12,14 +12,18 @@ class AuthTests(APITestCase):
         data = {'email': email, 'password': password}
         response = self.client.post(url, data, format='json')
         return response
+    
+    def register_default_test_user(self):
+        '''
+        Create a test user.
+        '''
+        return self.register_user('test@user.com', 'Password1!')
 
     def test_user_registration(self):
         '''
         Test that a user can register.
         '''
-        url = reverse('register')
-        data = {'email': 'test@user.com', 'password': 'Password1!'}
-        response = self.client.post(url, data, format='json')
+        response = self.register_default_test_user()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue('token' in response.data)
 
@@ -27,11 +31,9 @@ class AuthTests(APITestCase):
         '''
         Test that a user cannot register with an email that already exists.
         '''
-        url = reverse('register')
-        data = {'email': 'helloagain@user.com', 'password': 'Password1!'}
-        first_response = self.client.post(url, data, format='json')
+        first_response = self.register_default_test_user()
         self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
-        second_response = self.client.post(url, data, format='json')
+        second_response = self.register_default_test_user()
         # We already used that email address for an existing user, so it's a bad request.
         self.assertEqual(second_response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -39,14 +41,14 @@ class AuthTests(APITestCase):
         '''
         Test that a user cannot register without an email.
         '''
-        response = self.create_user('', 'Password1!')
+        response = self.register_user('', 'Password1!')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_user_registration_invalid_email(self):
         '''
         Test that a user cannot register with an invalid email.
         '''
-        response = self.create_user('invalidemail', 'Password1!')
+        response = self.register_user('invalidemail', 'Password1!')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_user_registration_no_password(self):
@@ -62,13 +64,17 @@ class AuthTests(APITestCase):
         '''
         Test that a user cannot register with an invalid password.
         '''
-        response = self.create_user('short@user.com', 'short1!')
+
+        # Minimum 8 characters
+        response = self.register_user('short@user.com', 'short1!')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        response = self.create_user('nonumber@user.com', 'Password!')
+        # At least one number
+        response = self.register_user('nonumber@user.com', 'Password!')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        response = self.create_user('nospecial@user.com', 'Password11')
+        # At least one special character
+        response = self.register_user('nospecial@user.com', 'Password11')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     # Login tests
@@ -78,11 +84,12 @@ class AuthTests(APITestCase):
         Test that a user can log in.
         '''
         # First, create a user
-        user_data = {'email': 'test@user.com', 'password': 'Password1!'}
-        self.create_user(user_data['email'], user_data['password'])
+        self.register_default_test_user()
 
         # Then, log in
         url = reverse('login')
+        # Same details as created user
+        user_data = {'email': 'test@user.com', 'password': 'Password1!'}
         response = self.client.post(url, user_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('token' in response.data)
@@ -93,7 +100,7 @@ class AuthTests(APITestCase):
         '''
         # First, create a user
         user_data = {'email': 'test@user.com', 'password': 'Password1!'}
-        self.create_user(user_data['email'], user_data['password'])
+        self.register_user(user_data['email'], user_data['password'])
 
         # Then, log in and check it works on repeated attempts
         url = reverse('login')
@@ -107,3 +114,8 @@ class AuthTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('token' in response.data)
         
+    def test_user_login_invalid(self):
+        '''
+        Test that a user cannot log in with invalid credentials.
+        '''
+        # First, create a user
