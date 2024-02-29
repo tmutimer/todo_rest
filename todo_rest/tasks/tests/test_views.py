@@ -29,7 +29,7 @@ class AuthTests(APITestCase):
         '''
         Test that a user cannot register without an email.
         '''
-        response = self.create_user('test@user.com', 'Password1!')
+        response = self.create_user('', 'Password1!')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_user_registration_no_password(self):
