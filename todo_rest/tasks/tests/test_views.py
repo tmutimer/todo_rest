@@ -22,6 +22,14 @@ class AuthTests(APITestCase):
         first_response = self.client.post(url, data, format='json')
         self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
         second_response = self.client.post(url, data, format='json')
-        print(second_response.data)
         # We already used that email address for an existing user, so it's a bad request.
         self.assertEqual(second_response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_registration_no_email(self):
+        '''
+        Test that a user cannot register without an email.
+        '''
+        url = reverse('register')
+        data = {'password': 'Password1!'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
