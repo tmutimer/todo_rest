@@ -27,3 +27,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+    
+
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        user = User.objects.filter(email=data['email']).first()
+        if user and user.check_password(data['password']):
+            data['user'] = user
+            return data
+        raise serializers.ValidationError("Incorrect Credentials")

@@ -70,3 +70,19 @@ class AuthTests(APITestCase):
 
         response = self.create_user('nospecial@user.com', 'Password11')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # Login tests
+        
+    def test_user_login(self):
+        '''
+        Test that a user can log in.
+        '''
+        # First, create a user
+        user_data = {'email': 'test@user.com', 'password': 'Password1!'}
+        self.create_user(user_data['email'], user_data['password'])
+        
+        # Then, log in
+        url = reverse('login')
+        response = self.client.post(url, user_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue('token' in response.data)
