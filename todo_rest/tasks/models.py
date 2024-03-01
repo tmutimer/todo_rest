@@ -28,7 +28,7 @@ class Task(models.Model):
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=400)
     due_date = models.DateField()
-    completed_date = models.DateTimeField(null=True, blank=True)
+    completed_date = models.DateField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):

@@ -306,3 +306,30 @@ class TaskTests(APITestCase):
         url = reverse('tasks')
         response = self.client.get(url + '123/', format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_task(self):
+        '''
+        Test that we can update a task
+        '''
+        # Create a task
+        url = reverse('tasks')
+        task_data = {"name": "Take the bins out"
+                     , "description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        response = self.client.post(url, task_data, format='json')
+        # Update the task
+        task_id = response.data['id']
+        task_data = {"name": "Take the bins out please"
+                     , "description": "It is done!"
+                     , "due_date": "2024-03-01"
+                     , "completed_date": "2024-02-01" }
+        response = self.client.put(url + f'{task_id}/', task_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Get the task and see if changes are correct
+        response = self.client.get(url + f'{task_id}/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], "Take the bins out please")
+        self.assertEqual(response.data['description'], "It is done!")
+        self.assertEqual(response.data['due_date'], "2024-03-01")
+        self.assertEqual(response.data['completed_date'], "2024-02-01")
+        

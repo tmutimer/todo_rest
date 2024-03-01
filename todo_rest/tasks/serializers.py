@@ -50,3 +50,15 @@ class TaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        if 'name' in validated_data:
+            instance.name = validated_data['name']
+        if 'description' in validated_data:
+            instance.description = validated_data['description']
+        if 'due_date' in validated_data:
+            instance.due_date = validated_data['due_date']
+        if 'completed_date' in validated_data:
+            instance.completed_date = validated_data['completed_date']
+        instance.save()
+        return instance
