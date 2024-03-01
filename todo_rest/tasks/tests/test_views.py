@@ -332,4 +332,30 @@ class TaskTests(APITestCase):
         self.assertEqual(response.data['description'], "It is done!")
         self.assertEqual(response.data['due_date'], "2024-03-01")
         self.assertEqual(response.data['completed_date'], "2024-02-01")
-        
+
+    def test_delete_task(self):
+        '''
+        Test that we can delete a task
+        '''
+        # Create a task
+        url = reverse('tasks')
+        task_data = {"name": "Take the bins out"
+                     , "description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        response = self.client.post(url, task_data, format='json')
+        # Delete the task
+        task_id = response.data['id']
+        response = self.client.delete(url + f'{task_id}/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Now try to get the task
+        response = self.client.get(url + f'{task_id}/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_unkown_task(self):
+        '''
+        Test that we get a 404 when trying to delete a task that doesn't exist
+        '''
+        url = reverse('tasks')
+        response = self.client.delete(url + '123/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
