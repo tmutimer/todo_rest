@@ -299,3 +299,10 @@ class TaskTests(APITestCase):
         self.assertEqual(response.data['description'], task_data['description'])
         self.assertEqual(response.data['due_date'], task_data['due_date'])
 
+    def test_get_unkown_task(self):
+        '''
+        Test that we get a 404 when trying to get a task that doesn't exist
+        '''
+        url = reverse('tasks')
+        response = self.client.get(url + '123/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
