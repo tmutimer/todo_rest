@@ -182,7 +182,7 @@ class TaskTests(APITestCase):
         response = self.client.post(url, task_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_get_one_task(self):
+    def test_get_task(self):
         '''
         Test that a user can get their tasks
         '''
@@ -200,3 +200,102 @@ class TaskTests(APITestCase):
         self.assertEqual(response.data[0]['name'], task_data['name'])
         self.assertEqual(response.data[0]['description'], task_data['description'])
         self.assertEqual(response.data[0]['due_date'], task_data['due_date'])
+    
+    def test_get_many_tasks(self):
+        '''
+        Test that a user can get multiple tasks
+        '''
+        # Create a task
+        url = reverse('tasks')
+        task_data = {"name": "Take the bins out"
+                     , "description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        self.client.post(url, task_data, format='json')
+        # Create another task
+        task_data = {"name": "Do the washing up"
+                     , "description": "Kitchen is a mess!"
+                     , "due_date": "2024-02-01" }
+        self.client.post(url, task_data, format='json')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]['name'], "Take the bins out")
+        self.assertEqual(response.data[1]['name'], "Do the washing up")
+
+    def test_get_task_user_not_shown(self):
+        '''
+        Test that the user ID is not returned in the response of GET /tasks/
+        '''
+        # Create a task
+        url = reverse('tasks')
+        task_data = {"name": "Take the bins out"
+                     , "description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        self.client.post(url, task_data, format='json')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse('user' in response.data[0])
+
+    def test_get_tasks_filtered(self):
+        '''
+        Test that we can filter by name, description or due date (or any combination of the three)
+        '''
+        # Create a task
+        url = reverse('tasks')
+        task_data = {"name": "Take the bins out"
+                     , "description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        self.client.post(url, task_data, format='json')
+        # Create another task
+        task_data = {"name": "Do the washing up"
+                     , "description": "Kitchen is a mess!"
+                     , "due_date": "2024-02-01" }
+        self.client.post(url, task_data, format='json')
+        # Create another task
+        task_data = {"name": "Create a REST API"
+                     , "description": "They are cool"
+                     , "due_date": "2024-02-01" }
+        self.client.post(url, task_data, format='json')
+        # Filter by name
+        response = self.client.get(url + '?name=Take the bins out', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], "Take the bins out")
+        # Filter by description
+        response = self.client.get(url + '?description=Kitchen is a mess!', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], "Do the washing up")
+        # Filter by due date
+        response = self.client.get(url + '?due_date_from=2024-02-01&due_date_to=2024-02-01', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        # Filter by name and description
+        response = self.client.get(url + '?name=Take the bins out&description=Got to be done!', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], "Take the bins out")
+        # Filter by name and due date
+        response = self.client.get(url + '?name=Take the bins out&due_date_from=2024-03-01&due_date_to=2024-03-01', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], "Take the bins out")
+
+    def test_get_tasks_by_id(self):
+        '''
+        Test that we can get a specific task by ID in path
+        '''
+        # Create a task
+        url = reverse('tasks')
+        task_data = {"name": "Take the bins out"
+                     , "description": "Got to be done!"
+                     , "due_date": "2024-03-01" }
+        response = self.client.post(url, task_data, format='json')
+        # Get the task
+        task_id = response.data['id']
+        response = self.client.get(url + f'{task_id}/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], task_data['name'])
+        self.assertEqual(response.data['description'], task_data['description'])
+        self.assertEqual(response.data['due_date'], task_data['due_date'])
+

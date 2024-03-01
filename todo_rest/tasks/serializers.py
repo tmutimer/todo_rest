@@ -44,9 +44,9 @@ class UserLoginSerializer(serializers.Serializer):
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = '__all__'
+        fields = ('id', 'name', 'description', 'due_date', 'completed_date')
         read_only_fields = ('user',)
-
+    
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
